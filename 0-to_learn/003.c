@@ -28,7 +28,7 @@ int	main(void)
 	i = 0;
 	while (i++ < 3)
 	{
-		if (pthread_create(&thread_id, NULL, print_hello, (void *)&thread_id) FAILED)
+		if (pthread_create(&thread_id, NULL, print_hello, (void *)&thread_id) fsiled)
 		{
 			printf("error creating thread\n");
 			exit(1);

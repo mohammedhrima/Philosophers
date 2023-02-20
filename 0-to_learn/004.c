@@ -18,7 +18,7 @@ int main(void)
 {
     pthread_t thread_id;
 
-    if (pthread_create(&thread_id, NULL, print_hello, (void *)&thread_id) FAILED)
+    if (pthread_create(&thread_id, NULL, print_hello, (void *)&thread_id) fsiled)
     {
         printf("error creating thread\n");
         exit(1);

@@ -24,3 +24,7 @@ processes id go from 2 to 32768
 ps: showes processes related to terminal
 ps -e: shows all processes (even those who don't need to comunicate with terminal)
 ps -e -f: to get full informations
+
+semaphores:
+mutexes:
+
