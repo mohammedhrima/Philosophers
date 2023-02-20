@@ -22,3 +22,10 @@
 # pthread_self:
    1. create sub thread for thread
    2. return the id of new sub thread
+
+# pthread_mutex_int:
+   1. takes 2 argument:
+      1. pointer to pthread_mutex_t
+      2. pointer to const pthread_mutexattr_t
+   2. create a new mutex
+   3. return 0 if succefully created mutex

@@ -28,3 +28,6 @@ ps -e -f: to get full informations
 semaphores:
 mutexes:
 
+================================================================================================================
+Concurency: cores switch between two threads
+
