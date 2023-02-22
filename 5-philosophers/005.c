@@ -28,10 +28,11 @@ philo *new_philo(int i)
     res->next = NULL;
     res->index = i;
     res->time_to_live = TIME_TO_LIVE;
-    // if(pthread_create(res->thread))
-    // {
-
-    // }
+    if (pthread_create(res->thread, NULL, action, NULL))
+    {
+        printf("Error in creating thread in philo %d\n", res->index);
+        exit(-1);
+    }
     if (pthread_mutex_init(&res->fork_mutex, NULL) != 0)
     {
         printf("Error in creating fork mutex in philo %d\n", res->index);
@@ -143,17 +144,6 @@ int main(void)
     printf("\n======================================================\n");
     while (1)
     {
-        if (pthread_mutex_lock(&my_philo->read_thread_mutex) == 0)
-        {
-            pthread_create(&my_philo->thread, NULL, action, my_philo);
-            my_philo = my_philo->next;
-            // pthread_join(my_philo->thread, NULL);
-            pthread_mutex_unlock(&my_philo->read_thread_mutex);
-        }
-        else
-        {
-            printf("Error in philo %d\n", my_philo->index);
-            exit(0);
-        }
+       
     }
 }
