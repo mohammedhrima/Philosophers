@@ -1,3 +1,29 @@
+4 philos:
+0-1, 2-3, 4
+0, 1-2, 3-4
+
+5 philos:
+0-1, 2-3, 4-5
+5-0, 1-2, 3-4
+
+0-1, 2-3, 4
+
 1. create 2 functions
 2. create threads
 3. in each thread execute one function
+
+0. philos will be struct that contains mutex_fork and next philo
+1. set actions for each philo in struct: eat, think, sleep, die
+2. call function:
+    each function has the name of action
+    reset the time of dying
+    decrement the time of main action
+    decrement the time of dying of no working philos
+
+
+start with two philos
+
+eat -> sleep -> think / simulation stop when I philo dies
+
+
+- put your own macros for pthread functions

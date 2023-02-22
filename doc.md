@@ -9,10 +9,8 @@ POSIX: portable operatinh system interface
 
 we can switch between threads much faster than switching between processes , because threads share the same data addresses
 
-
 mutex: mutual exclusion
     is like a imaginary box stands / means that thread is usign this variable and no one can access to it  
-
 
 =================================================================================================================
 Process:
@@ -30,4 +28,3 @@ mutexes:
 
 ================================================================================================================
 Concurency: cores switch between two threads
-

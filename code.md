@@ -1,4 +1,3 @@
-
 # pthread_create:
    1. takes 4 arguments
       1. pointer to thread
@@ -29,3 +28,15 @@
       2. pointer to const pthread_mutexattr_t
    2. create a new mutex
    3. return 0 if succefully created mutex
+
+#  pthread_mutex_lock:
+   1. takes one argument:
+      1. pointer to mutex to lock
+   2. give permission to the thread who lock the mutex
+   3. return 0 if succefull / if failed return something else
+
+# pthread_mutex_unlock:
+   1. takes one argument:
+      1. pointer to mutex to unlock
+   2. unlock the locked thread
+   3. return 0 if succefull / if failed return something else
