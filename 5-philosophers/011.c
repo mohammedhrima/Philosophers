@@ -6,14 +6,15 @@
 // timing
 int time_to_eat = 100;
 int time_to_sleep = 150000;
-int time_to_die = 100;
+int time_to_die = 50;
 int timing = 3000;
 int number_of_philosophers = 5;
+pthread_mutex_t lock;
 
 typedef struct philo
 {
     pthread_t thread;
-    pthread_mutex_t lock;
+
     int index;
     int num;
 } philo;
@@ -23,12 +24,11 @@ philo new_philo(int i)
     philo var;
     var.index = i;
     var.num = 0;
-
-    if (pthread_mutex_init(&var.lock, NULL) != 0)
-    {
-        printf("Error in creating thread\n");
-        exit(0);
-    }
+    // if (pthread_create(&var.thread, NULL, action, &var) != 0)
+    // {
+    //     printf("error creating thread\n");
+    //     exit(0);
+    // }
     return (var);
 }
 
@@ -36,9 +36,12 @@ void *eat(void *arg)
 {
     while (1)
     {
-         usleep(time_to_sleep);
+        usleep(5000);
+        pthread_mutex_lock(&lock);
+        usleep(time_to_sleep);
         ((philo *)arg)->num++;
         printf("philo %d doing action to num: %d \n", ((philo *)arg)->index, ((philo *)arg)->num);
+        pthread_mutex_unlock(&lock);
     }
     return (NULL);
 }
@@ -55,6 +58,8 @@ void check(philo *arg)
 int main(void)
 {
     philo *var;
+
+    pthread_mutex_init(&lock, NULL);
     int i = 0;
     var = malloc(number_of_philosophers * sizeof(philo));
     while (i < number_of_philosophers)
@@ -72,11 +77,13 @@ int main(void)
         }
         i++;
     }
-    while (1)
+    while (1) // stop if philo a died
+    // verify sleeping
     {
         i = 0;
         while (i < number_of_philosophers)
         {
+            // pthread_join(&var[i - 1] )
             usleep(time_to_sleep);
             check(&var[i]);
             i++;

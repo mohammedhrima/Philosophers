@@ -4,16 +4,18 @@
 #include <stdlib.h>
 
 // timing
-int time_to_eat = 100;
-int time_to_sleep = 150000;
-int time_to_die = 50;
-int timing = 3000;
-int number_of_philosophers = 5;
+int time_to_eat = 100000;
+int time_to_sleep = 100000;
+int time_to_die = 110000;
+int timing = 100000;
+int number_of_philosophers = 30;
 pthread_mutex_t lock;
+pthread_mutex_t lock1;
 
 typedef struct philo
 {
     pthread_t thread;
+    int death;
 
     int index;
     int num;
@@ -24,36 +26,39 @@ philo new_philo(int i)
     philo var;
     var.index = i;
     var.num = 0;
-    // if (pthread_create(&var.thread, NULL, action, &var) != 0)
-    // {
-    //     printf("error creating thread\n");
-    //     exit(0);
-    // }
+
     return (var);
+}
+
+void check(philo *arg)
+{
+    if (arg->death >= time_to_die)
+    {
+        printf("exit in %d\n", arg->index);
+        exit(0);
+    }
 }
 
 void *eat(void *arg)
 {
     while (1)
     {
-        usleep(5000);
+        usleep(timing); // time to wait to give other oportunity to take the lock
+        // check((philo *)arg);
         pthread_mutex_lock(&lock);
-        usleep(time_to_sleep);
-        ((philo *)arg)->num++;
-        printf("philo %d doing action to num: %d \n", ((philo *)arg)->index, ((philo *)arg)->num);
+        usleep(time_to_eat);
+        // ((philo *)arg)->num++;
+        printf("philo %d death: %d \n", ((philo *)arg)->index, ((philo *)arg)->death);
+        ((philo *)arg)->death = 0;
         pthread_mutex_unlock(&lock);
     }
     return (NULL);
 }
 
-void check(philo *arg)
-{
-    if (arg->num > 100)
-    {
-        printf("exit in %d\n", arg->index);
-        exit(0);
-    }
-}
+// void *sleeping(void *arg)
+// {
+
+// }
 
 int main(void)
 {
@@ -77,14 +82,18 @@ int main(void)
         }
         i++;
     }
-    while (1)
+    while (1) // stop if philo a died
+    // verify sleeping
     {
         i = 0;
         while (i < number_of_philosophers)
         {
-            // pthread_join(&var[i - 1] )
+            // pthread_join(var[i].thread,NULL);
+            var[i].death += time_to_sleep;
             usleep(time_to_sleep);
+            // pthread_mutex_lock(&lock1);
             check(&var[i]);
+            // pthread_mutex_unlock(&lock1);
             i++;
         }
     }

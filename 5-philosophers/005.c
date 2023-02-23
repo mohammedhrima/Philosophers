@@ -28,7 +28,7 @@ philo *new_philo(int i)
     res->next = NULL;
     res->index = i;
     res->time_to_live = TIME_TO_LIVE;
-    if (pthread_create(res->thread, NULL, action, NULL))
+    if (pthread_create(res->thread, NULL, eat, NULL))
     {
         printf("Error in creating thread in philo %d\n", res->index);
         exit(-1);
@@ -67,7 +67,7 @@ philo *build_linked_list(int len)
     return (head);
 }
 
-void *action(void *arg)
+void *eat(void *arg)
 {
     philo *curr = (philo *)arg;
 

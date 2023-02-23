@@ -66,7 +66,7 @@ philo *build_linked_list(int len)
     return (head);
 }
 
-void *action(void *arg)
+void *eat(void *arg)
 {
     philo *curr = (philo *)arg;
     if (curr->time_to_live > 0 && pthread_mutex_lock(&curr->fork_mutex) == 0 && pthread_mutex_lock(&curr->next->fork_mutex) == 0)
@@ -133,7 +133,7 @@ int main(void)
     {
         if (pthread_mutex_lock(&my_philo->read_thread_mutex) == 0)
         {
-            pthread_create(&my_philo->thread, NULL, action, my_philo);
+            pthread_create(&my_philo->thread, NULL, eat, my_philo);
             my_philo = my_philo->next;
             pthread_mutex_unlock(&my_philo->read_thread_mutex);
         }

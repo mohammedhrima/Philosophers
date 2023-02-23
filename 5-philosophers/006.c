@@ -12,7 +12,7 @@ typedef struct my_var
     pthread_mutex_t lock_index;
 } my_var;
 
-void *action(void *arg)
+void *eat(void *arg)
 {
     while (1)
     {
@@ -41,7 +41,7 @@ my_var *new_var(int i)
     my_var *res = malloc(sizeof(my_var));
     res->i = i;
     res->index = i;
-    if (pthread_create(&res->thread, NULL, action, res) != 0)
+    if (pthread_create(&res->thread, NULL, eat, res) != 0)
     {
         printf("Error in creating thread %d\n", i);
         exit(-1);

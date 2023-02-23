@@ -26,3 +26,6 @@ actions are:
 
 step 1:
     build philo with actions
+
+
++ mutex for eat

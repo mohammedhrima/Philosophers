@@ -18,7 +18,7 @@ typedef struct philo
     int num;
 } philo;
 
-void *action(void *arg)
+void *eat(void *arg)
 {
     // pthread_mutex_lock(&((philo*)arg)->lock);
     philo *s;
@@ -83,7 +83,7 @@ int main(void)
     while (i < number_of_philosophers)
     {
         pthread_mutex_lock(&i_lock);
-        if (pthread_create(&var[i].thread, NULL, action, &var[i]) != 0)
+        if (pthread_create(&var[i].thread, NULL, eat, &var[i]) != 0)
         {
             printf("Error in creating thread\n");
             exit(0);
