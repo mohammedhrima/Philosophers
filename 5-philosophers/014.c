@@ -1,26 +1,30 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct philo
 {
     pthread_mutex_t _fork;
+    pthread_t thread;
     int index;
     struct philo *next;
 } philo;
 
-philo *new_philo(int i)
+philo *new_philo(int index)
 {
-    philo *guy;
+    philo *man;
 
-    guy = malloc(sizeof(philo));
-    guy->next = NULL;
-    guy->index = i;
-    if (pthread_mutex_init(&guy->_fork, NULL) != 0)
+    man = malloc(sizeof(philo));
+    memset(man, 0, sizeof(philo));
+    man->index = index;
+    man->next = NULL;
+    if (pthread_mutex_init(&man->_fork, NULL) != 0)
     {
         printf("Error creating mutex\n");
+        exit(-1);
     }
-    return (guy);
+    return (man);
 }
 
 philo *init_philosophers(int len)
@@ -48,23 +52,27 @@ void *eat(void *arg)
 
 int main(void)
 {
-    int philos_len = 5;
-    philo *main_philo = init_philosophers(philos_len);
-    philo *curr = main_philo;
+    int len = 5;
+    philo *philos = init_philosophers(len);
+    philo *curr = philos;
     int i = 0;
-    while (i < philos_len)
+    while (i < len)
     {
-        if (pthread_create(&curr->_fork, NULL, eat, &curr) != 0)
-            i++;
-    }
-
-    i = 0;
-    while (i < philos_len)
-    {
-        printf("%d\n", main_philo->index);
-        *main_philo = *(main_philo->next);
+        if (pthread_create(&curr->thread, NULL, eat, &curr) != 0)
+        {
+            printf("Error creating thread\n");
+            exit(-1);
+        };
+        curr = curr->next;
         i++;
     }
-
-    return (0);
+    i = 0;
+    curr = philos;
+    while (i < len)
+    {
+        printf("%d\n", curr->index);
+        curr = curr->next;
+        i++;
+    }
+    return(0);
 }

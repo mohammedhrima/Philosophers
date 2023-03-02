@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 int n = 0;
-ç
+pthread_mutex_t lock;
 // int lock = PTHREAD_MUTEX_INITIALIZER;
 
 void *func1(void *arg)

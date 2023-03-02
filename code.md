@@ -2,8 +2,11 @@
    1. takes 4 arguments
       1. pointer to thread
       2. specifies attributes , if is NULL , default attributes will be used, (attribute means behaviour of thread)
+         - types of behaviour of threads:
+            joinable (default): main thread wait for it
+            detached : main thread won't wait for it 
       3. function name to be executed by the thread 
-      4. argumnets that will be passed to function above (myThreadFun)
+      4. arguments that will be passed to function above (myThreadFun)
    2. return 0 if thread create succefully, otherwise return error number
 
 # pthread_join:
@@ -40,3 +43,8 @@
       1. pointer to mutex to unlock
    2. unlock the locked thread
    3. return 0 if succefull / if failed return something else
+
+# pthread_mutex_destroy:
+   1. takes one argument:
+      1. pointer to mutex to destroy
+   

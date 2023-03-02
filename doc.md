@@ -28,3 +28,19 @@ mutexes:
 
 ================================================================================================================
 Concurency: cores switch between two threads
+
+never make a copy of thread condition variable
+
+- to create a condition statically:
+        var data = {
+            PTHREAD_MUTEX_INITIALIZER,
+            PTHREAD_COND_INITIALIZER,
+            0};
+
+- to create a condition dynamically:
+    
+- always destory 
+
+- types of behaviour of threads:
+    joinable (default): main thread wait for it
+    detached : main thread won't wait for it 
