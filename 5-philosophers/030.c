@@ -70,7 +70,10 @@ void *routine(void *arg)
             pthread_mutex_lock(&philo->last_time_did_eat_mutex);
             /////////////////////////////////////////////////////////
             usleep(2 * usleep_timing);
-            print_state(philo, "has taken fork");
+            usleep(usleep_timing);
+            // pthread_mutex_lock(philo->printing_mutex);
+            // printf("philosopher %d has taken fork %d and fork %d\n", philo->index, philo->index, philo->next->index);
+            // pthread_mutex_unlock(philo->printing_mutex);
             print_state(philo, "is eating");
             usleep(time_to_eat);
         }
@@ -129,26 +132,26 @@ int main(void)
     i = 0;
     while (i < len)
     {
-        if (i % 2 == 0)
-        {
-            philo->last_time_did_eat = current_time;
-            pthread_create(&philo->thread, NULL, routine, philo);
-        }
+        // if (i % 2 == 0)
+        // {
+        philo->last_time_did_eat = current_time;
+        pthread_create(&philo->thread, NULL, routine, philo);
+        // }
         philo = philo->next;
         i++;
     }
     usleep(usleep_timing);
-    i = 0;
-    while (i < len)
-    {
-        if (i % 2 == 1)
-        {
-            philo->last_time_did_eat = current_time;
-            pthread_create(&philo->thread, NULL, routine, philo);
-        }
-        philo = philo->next;
-        i++;
-    }
+    // i = 0;
+    // while (i < len)
+    // {
+    //     if (i % 2 == 1)
+    //     {
+    //         philo->last_time_did_eat = current_time;
+    //         pthread_create(&philo->thread, NULL, routine, philo);
+    //     }
+    //     philo = philo->next;
+    //     i++;
+    // }
     check(philo);
     // i = 0;
 }
