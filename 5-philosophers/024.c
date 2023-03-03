@@ -41,7 +41,7 @@ t_philo *init_philos(int len)
     return (head);
 }
 
-void *func1(void *arg)
+void *routine(void *arg)
 {
     while (1)
     {
@@ -75,12 +75,14 @@ int main(void)
     i = 0;
     while (i < len)
     {
-        pthread_create(&philo->thread, NULL, func1, philo);
+        pthread_create(&philo->thread, NULL, routine, philo);
         philo = philo->next;
         i++;
     }
 
     while (1)
-        ;
+    {
+
+    }
     i = 0;
 }

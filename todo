@@ -23,9 +23,46 @@ actions are:
     eat -> sleep -> think / simulation stop when I philo dies
 
 
-
 step 1:
     build philo with actions
 
 
 + mutex for eat
+
+inputs:
+    number of philosophers
+    time to die
+    time to eat
+    time to sleep
+    number of meals (optional) / muhim direha
+
+///////////////////////////////////////////////////////
+
+last time did eat (variable in the struct)
+will be set to current time at the beginning
+once start eating -> last time did eat = current + eating time , then usleep
+
+in checker i will keep checking this variable:
+    if current_time - last_time_did_eat >= time_to_die -> did die
+
+
+build struct of table contains array of structs of philos
+    table will contains:
+        time to eat
+        time to die
+        time to sleep
+        someone died
+        mutex of printing
+        // mutex of checking
+        head of philos
+        current time
+    philo will contains:
+        last time did eat
+        fork mutex
+        thread
+        index
+        *next
+
+
+
+data race !
