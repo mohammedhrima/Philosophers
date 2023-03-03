@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-int time_to_sleep = 300000;
+int time_to_sleep = 100000;
 int time_to_eat = 100000;
 int usleep_timing = 300000;
 int time_to_die = 10000;
@@ -59,7 +59,7 @@ void *routine(void *arg)
             gettimeofday(&var->last_time_did_eat, NULL);
             var->last_time_did_eat.tv_sec += (time_t)time_to_eat;
             // var->last_time_did_eat
-            usleep(2*usleep_timing);
+            usleep(2 * usleep_timing);
             pthread_mutex_lock(var->printing_mutex);
             printf("philosopher %d has taken fork %d and %d\n", var->index, var->index, var->next->index);
             // pthread_mutex_unlock(var->printing_mutex);
@@ -124,26 +124,26 @@ int main(void)
     i = 0;
     while (i < len)
     {
-        if (i % 2 == 0)
-        {
-            philo->last_time_did_eat = current_time;
-            pthread_create(&philo->thread, NULL, routine, philo);
-        }
+        // if (i % 2 == 0)
+        // {
+        philo->last_time_did_eat = current_time;
+        pthread_create(&philo->thread, NULL, routine, philo);
+        // }
         philo = philo->next;
         i++;
     }
-    usleep(usleep_timing);
-    i = 0;
-    while (i < len)
-    {
-        if (i % 2 == 1)
-        {
-            philo->last_time_did_eat = current_time;
-            pthread_create(&philo->thread, NULL, routine, philo);
-        }
-        philo = philo->next;
-        i++;
-    }
+    // usleep(2*usleep_timing);
+    // i = 0;
+    // while (i < len)
+    // {
+    //     if (i % 2 == 1)
+    //     {
+    //         philo->last_time_did_eat = current_time;
+    //         pthread_create(&philo->thread, NULL, routine, philo);
+    //     }
+    //     philo = philo->next;
+    //     i++;
+    // }
     check(philo);
     // i = 0;
 }

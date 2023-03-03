@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-int time_to_sleep = 300000;
+int time_to_sleep = 800000;
 int time_to_eat = 100000;
 int time_to_die = 10000;
 int time_to_think = 100000;
@@ -61,41 +61,47 @@ void *routine(void *arg)
 {
     while (1)
     {
-        t_philo *var = (t_philo *)arg;
-        if (pthread_mutex_lock(&var->fork_mutex) == 0 && pthread_mutex_lock(&var->next->fork_mutex) == 0)
+        t_philo *philo = (t_philo *)arg;
+        if (pthread_mutex_lock(&philo->fork_mutex) == 0 && pthread_mutex_lock(&philo->next->fork_mutex) == 0)
         {
-            gettimeofday(&var->last_time_did_eat, NULL);
-            var->last_time_did_eat.tv_sec += (time_t)time_to_eat;
+            gettimeofday(&philo->last_time_did_eat, NULL);
+            pthread_mutex_lock(&philo->last_time_did_eat_mutex);
+            philo->last_time_did_eat.tv_sec += (time_t)time_to_eat;
+            pthread_mutex_lock(&philo->last_time_did_eat_mutex);
+            /////////////////////////////////////////////////////////
             usleep(2 * usleep_timing);
-            print_state(var, "has taken fork");
-            print_state(var, "is eating");
+            print_state(philo, "has taken fork");
+            print_state(philo, "is eating");
             usleep(time_to_eat);
         }
-        pthread_mutex_unlock(&var->fork_mutex);
-        pthread_mutex_unlock(&var->next->fork_mutex);
-        print_state(var, "is sleeping");
+        pthread_mutex_unlock(&philo->fork_mutex);
+        pthread_mutex_unlock(&philo->next->fork_mutex);
+        print_state(philo, "is sleeping");
         usleep(time_to_sleep);
-        print_state(var, "is thinking");
+        print_state(philo, "is thinking");
         usleep(usleep_timing);
     }
     return (NULL);
 }
 
 // add a usleep here
-void check(t_philo *var)
+void check(t_philo *philo)
 {
     // t_philo *curr = var;
-    // timing current_time;
+    timing current_time;
     while (1)
     {
-        // gettimeofday(&current_time, NULL);
-        // // add lock here
-        // if (current_time.tv_sec - var->last_time_did_eat.tv_sec >= (time_t)time_to_die)
-        // {
-        //     printf("%d did died\n", var->index);
-        //     exit(0);
-        // }
-        // curr = curr->next;
+        // usleep(usleep_timing);
+        // add lock here
+        gettimeofday(&current_time, NULL);
+        pthread_mutex_lock(&philo->last_time_did_eat_mutex);
+        if (current_time.tv_sec - philo->last_time_did_eat.tv_sec >= (time_t)time_to_die)
+        {
+            printf("%d did died\n", philo->index);
+            exit(0);
+        }
+        pthread_mutex_unlock(&philo->last_time_did_eat_mutex);
+        philo = philo->next;
     }
 }
 
