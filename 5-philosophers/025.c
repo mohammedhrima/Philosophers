@@ -3,6 +3,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#define million 1000000
+#define sec tv_sec
+#define milsec tv_usec
 typedef struct timeval timing;
 void time_spent(void)
 {
@@ -22,14 +25,18 @@ void time_spent(void)
 
 int main(void)
 {
-    // struct timeval current;
-    // gettimeofday(&current, NULL);
-    // printf("seconds: %ld micro seconds: %d\n", current.tv_sec, current.tv_usec);
-    while (1)
-    {
-        time_spent();
-        usleep(300000);
-    }
+    struct timeval current;
+    gettimeofday(&current, NULL);
+    // printf("%ld seconds, %d | %ld micro seconds\n", current.tv_sec, current.tv_usec, (time_t)current.tv_usec);
+    printf("%ld seconds + %ld micro seconds = %ld\n", current.tv_sec, (time_t)current.tv_usec, million * current.tv_sec + (time_t)current.tv_usec);
+    printf("%ld seconds + %ld micro seconds = %ld\n", current.sec, (time_t)current.milsec, million * current.sec + (time_t)current.milsec);
+
+
+    // while (1)
+    // {
+    //     time_spent();
+    //     usleep(300000);
+    // }
 
     return (0);
 }

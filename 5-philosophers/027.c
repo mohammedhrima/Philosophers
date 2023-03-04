@@ -16,7 +16,7 @@ typedef struct s_philo
     struct s_philo *next;
 } t_philo;
 
-typedef struct s_table
+typedef struct s_shared_data
 {
     time_t time_to_die;
     time_t time_to_eat;
@@ -25,7 +25,7 @@ typedef struct s_table
     int someone_died;
     pthread_mutex_t printing_lock;
     t_philo *philo;
-} t_table;
+} t_shared_data;
 
 t_philo *new_philo(int index)
 {
@@ -56,7 +56,7 @@ void *routine(void *arg)
 {
     while (1)
     {
-        t_table *table = (t_table *)arg;
+        t_shared_data *table = (t_shared_data *)arg;
         t_philo *philo = table->philo;
         usleep(100000);
         if (pthread_mutex_lock(&philo->_fork) == 0 && pthread_mutex_lock(&philo->next->_fork) == 0)
@@ -79,7 +79,7 @@ void *routine(void *arg)
 }
 
 // add a usleep here
-void check(t_table *table)
+void check(t_shared_data *table)
 {
     // t_philo *curr = table->philo;
     timing current_time;
@@ -100,11 +100,11 @@ void check(t_table *table)
 int main(void)
 {
     int len = 5;
-    t_table *table;
+    t_shared_data *table;
     int i;
 
     // init table
-    table = malloc(sizeof(t_table));
+    table = malloc(sizeof(t_shared_data));
     table->time_to_sleep = 300000;
     table->time_to_eat = 300000;
     table->time_to_die = 10000;

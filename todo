@@ -1,68 +1,51 @@
-4 philos:
-0-1, 2-3, 4
-0, 1-2, 3-4
-
-5 philos:
-0-1, 2-3, 4-5
-5-0, 1-2, 3-4
-
-0-1, 2-3, 4
-
-===================================================================
-1. create 2 functions
-2. create threads
-3. in each thread execute one function
-
-0. philos will be struct that contains mutex_fork and next philo
-1. set actions for each philo in struct: eat, think, sleep, die
-2. call function:
-    each function has the name of action
-3. start with two philos
-
-actions are:
-    eat -> sleep -> think / simulation stop when I philo dies
-
-
-step 1:
-    build philo with actions
-
-
-+ mutex for eat
+data race !
 
 inputs:
     number of philosophers
     time to die
     time to eat
     time to sleep
-    number of meals (optional) / muhim direha
+    number of meals (optional)
 
-///////////////////////////////////////////////////////
+exit:
+    when someone died
+    when all philos did eat number of meals
 
-last time did eat (variable in the struct)
-will be set to current time at the beginning
-once start eating -> last time did eat = current + eating time , then usleep
+structs:
+    shared:
+        time_to_eat
+        time_to_die
+        time_to_sleep
+        number_of_philos
+        number_of_meals
 
-in checker i will keep checking this variable:
-    if current_time - last_time_did_eat >= time_to_die -> did die
+        all_alive
+        all_philos_did_eat_number_of_meals
 
-
-build struct of table contains array of structs of philos
-    table will contains:
-        time to eat
-        time to die
-        time to sleep
-        someone died
-        mutex of printing
-        // mutex of checking
-        head of philos
-        current time
-    philo will contains:
-        last time did eat
-        fork mutex
-        thread
+        printing_mutex
+        check_mutex        
+    
+    philo:
         index
+
+        last_time_did_eat (will be set to current time at the beginning)
+        last_time_did_eat_mutex
+        
+        thread
+        fork_mutex
+        
+        *shared (pointer to shared)
         *next
 
+routine: (will keep looping while all_alive)
+    eat:
+        philo->last_time_did_eat = current_time + time_to_eat 
+        philo->all_philos_did_eat_number_of_meals++;
+    sleep
+    think
 
-
-data race !
+in checker:
+    if current_time - last_time_did_eat >= time_to_die
+        all_alive = 0
+    if all_philos_did_eat_number_of_meals == philos_len * number_of_meals
+        exit(0);
