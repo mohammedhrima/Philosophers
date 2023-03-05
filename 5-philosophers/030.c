@@ -13,7 +13,7 @@ time_t time_to_die = 800000;
 // useconds_t time_to_think = 100000;
 // useconds_t usleep_timing = 50000;
 useconds_t usleep_timing = 0;
-int number_of_philos = 4;
+int number_of_philos = 5;
 
 // struct
 typedef struct timeval timing;

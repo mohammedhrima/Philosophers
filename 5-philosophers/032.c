@@ -14,6 +14,9 @@ typedef pthread_mutex_t t_mutex;
 typedef pthread_t t_thread;
 typedef unsigned long t_micro_sec;
 
+// to be removed after
+t_micro_sec sleep_between_threads = 1000 * THOUSAND;
+
 typedef struct s_shared
 {
     t_micro_sec time_to_print;
@@ -49,26 +52,30 @@ typedef struct s_philo
     struct s_philo *next;
 } t_philo;
 
-t_micro_sec current_time(void)
+void my_sleep(t_micro_sec sleeping_timing) // take argument in microseconds
 {
-    struct timeval *now;
+    struct timeval start;
+    struct timeval end;
+    useconds_t scaling;
 
-    now = malloc(sizeof(struct timeval));
-    gettimeofday(now, NULL);
-    // tv_sec: seconds
-    // tv_usec: micro_seconds
-    return (now->tv_sec * MILLION + now->tv_usec);
-}
+    // calculate how much time i should sleep
+    // every time to gap  0 - 0.2 miliseconds in total
+    scaling = (20 * MILLION) / sleeping_timing;
+    gettimeofday(&start, NULL);
+    printf("scaling will be %u \n", scaling);
+    printf("%lu start\n%lu end\n\n", start.tv_sec * MILLION + start.tv_usec, start.tv_sec * MILLION + start.tv_usec + sleeping_timing);
 
-void my_sleep(t_micro_sec sleeping_timing) // takes argument in milisecond
-{
-    t_micro_sec end;
-    t_micro_sec curr;
-
-    curr = current_time();
-    end = curr + sleeping_timing * THOUSAND; // in micro seconds
-    while (curr < end)
-        curr = current_time();
+    // exit(0);
+    while (1)
+    {
+        usleep(scaling); // take time in micro seconds
+        // usleep(sleeping_timing / 2);
+        gettimeofday(&end, NULL);
+        if (end.tv_sec * MILLION + end.tv_usec >= start.tv_sec * MILLION + start.tv_usec + sleeping_timing)
+            break;
+        // exit(0);
+    }
+    printf("%lu now\n", end.tv_sec * MILLION + end.tv_usec);
 }
 
 t_philo *new_philo(int index, t_shared *data)
@@ -141,34 +148,43 @@ int ft_strcmp(char *string1, char *string2)
 
 void print_state(t_philo *philo, char *str)
 {
-    // pthread_mutex_lock(&philo->data->printing_mutex);
-    printf("%lu: %d %s", current_time(), philo->index, str);
+    t_timing current_time;
+
+    pthread_mutex_lock(&philo->data->printing_mutex);
+    gettimeofday(&current_time, NULL);
+    printf("%lu: %d %s", current_time.tv_sec * MILLION + current_time.tv_usec, philo->index, str);
     if (ft_strcmp(str, "has taken fork") == 0)
         printf(" %d %d\n", philo->index, philo->next->index);
-    // pthread_mutex_unlock(&philo->data->printing_mutex);
+    pthread_mutex_unlock(&philo->data->printing_mutex);
 }
 
 void *routine(void *arg)
 {
     t_philo *philo = (t_philo *)arg;
+    t_timing current_time;
     while (1)
     {
+        my_sleep(sleep_between_threads);
         // lock for checking ?
-        // pthread_mutex_lock(&philo->fork_mutex);
-        // pthread_mutex_lock(&philo->next->fork_mutex);
+        pthread_mutex_lock(&philo->fork_mutex);
+        pthread_mutex_lock(&philo->next->fork_mutex);
 
         // take a fork
-        print_state(philo, "has taken fork");
+        gettimeofday(&current_time, NULL);
+        pthread_mutex_lock(&philo->data->printing_mutex);
+        printf("%lu: %d has taken fork", current_time.tv_sec * MILLION + current_time.tv_usec, philo->index);
+        pthread_mutex_lock(&philo->data->printing_mutex);
         // pthread_mutex_lock(&philo->last_time_did_eat_mutex);
-        philo->last_time_did_eat = current_time() + philo->data->time_to_eat;
+        gettimeofday(&current_time, NULL);
+        philo->last_time_did_eat = current_time.tv_sec * MILLION + current_time.tv_usec + philo->data->time_to_eat;
         // pthread_mutex_unlock(&philo->last_time_did_eat_mutex);
         // start eating
         print_state(philo, "is eating\n");
         my_sleep(philo->data->time_to_eat);
 
         // unlock forks after eating
-        // pthread_mutex_unlock(&philo->next->fork_mutex);
-        // pthread_mutex_unlock(&philo->fork_mutex);
+        pthread_mutex_unlock(&philo->fork_mutex);
+        pthread_mutex_unlock(&philo->next->fork_mutex);
 
         print_state(philo, "is sleeping\n");
         my_sleep(philo->data->time_to_sleep);
@@ -180,15 +196,18 @@ void *routine(void *arg)
 void check(t_philo *philo)
 {
     t_micro_sec time_to_eat = philo->data->time_to_eat;
+    t_timing current_time;
     while (1)
     {
-        // pthread_mutex_lock(&philo->last_time_did_eat_mutex);
-        if (current_time() - time_to_eat > philo->last_time_did_eat)
+        my_sleep(sleep_between_threads);
+        pthread_mutex_lock(&philo->last_time_did_eat_mutex);
+        gettimeofday(&current_time, NULL);
+        if (current_time.tv_sec * MILLION + current_time.tv_usec - time_to_eat > philo->last_time_did_eat)
         {
             print_state(philo, "did died\n");
             exit(0);
         }
-        // pthread_mutex_unlock(&philo->last_time_did_eat_mutex);
+        pthread_mutex_unlock(&philo->last_time_did_eat_mutex);
         philo = philo->next;
     }
 }
@@ -198,14 +217,22 @@ void check(t_philo *philo)
 int main(void)
 {
     int i;
+    t_timing current_time;
+    // t_micro_sec sleep_timing_test = 10 /*in seconds*/ * MILLION;
+    t_micro_sec sleep_timing_test = 70 /*in miliseconds*/ * THOUSAND;
+#if 0
+    write(1, "\nbefore my_sleep\n", 17);
+    my_sleep(sleep_timing_test);
+    write(1, "\nafter my_sleep\n", 17);
 
+#elif 1
     // giving variables from input
-    // convert them to micro seconds
-    t_micro_sec time_to_sleep = 200000 / THOUSAND;
-    t_micro_sec time_to_eat = 100000 / THOUSAND;
-    t_micro_sec time_to_die = 800000 / THOUSAND;
+    // convert them from miliseconds to micro seconds
+    t_micro_sec time_to_sleep = 2000 * THOUSAND;
+    t_micro_sec time_to_eat = 1000 * THOUSAND;
+    t_micro_sec time_to_die = 8000 * THOUSAND;
     // t_micro_sec time_to_print = 1000;
-    int number_of_philos = 2;
+    int number_of_philos = 6;
 
     // init shared data
     t_shared *data = new_shared(time_to_eat, time_to_die, time_to_sleep);
@@ -214,13 +241,17 @@ int main(void)
 
     printf("\n\n");
 
+
     // create threads
     i = 0;
     while (i < number_of_philos)
     {
+        printf("line break\n");
+        my_sleep(sleep_between_threads);
         if (i % 2 == 0)
         {
-            philo->last_time_did_eat = current_time();
+            gettimeofday(&current_time, NULL);
+            philo->last_time_did_eat = current_time.tv_sec * MILLION + current_time.tv_usec;
             pthread_create(&philo->thread, NULL, routine, philo);
         }
         philo = philo->next;
@@ -229,9 +260,11 @@ int main(void)
     i = 0;
     while (i < number_of_philos)
     {
+        my_sleep(sleep_between_threads);
         if (i % 2 == 1)
         {
-            philo->last_time_did_eat = current_time();
+            gettimeofday(&current_time, NULL);
+            philo->last_time_did_eat = current_time.tv_sec * MILLION + current_time.tv_usec;
             pthread_create(&philo->thread, NULL, routine, philo);
         }
         philo = philo->next;
@@ -239,4 +272,5 @@ int main(void)
     }
     // add check here
     check(philo);
+#endif
 }

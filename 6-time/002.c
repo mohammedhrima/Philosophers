@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 // consts
 #define THOUSAND 1000
@@ -14,20 +13,24 @@ t_micro_sec current_time(void)
 
     now = malloc(sizeof(struct timeval));
     gettimeofday(now, NULL);
-    // tv_sec: seconds
-    // tv_usec: micro_seconds
-    return (now->tv_sec * MILLION + now->tv_usec);
+    return (now->tv_sec * THOUSAND);
 }
 
-void my_sleep(t_micro_sec sleeping_timing) // takes argument in milisecond
+void my_sleep(t_micro_sec sleeping_timing) // take argument in milisecond
 {
+    // usleep(sleeping_timing);
     t_micro_sec end;
     t_micro_sec curr;
 
     curr = current_time();
-    end = curr + sleeping_timing * THOUSAND; // in micro seconds
+    end = curr + sleeping_timing;
+
+    printf("start from %lu, sleep %lu, will stop in %lu\n", curr, sleeping_timing, end);
     while (curr < end)
+    {
         curr = current_time();
+    }
+    printf("now %lu | stop in %lu\n", curr, end);
 }
 
 int main(void)
