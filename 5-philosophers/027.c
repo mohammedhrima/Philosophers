@@ -4,35 +4,31 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
+int time_to_sleep = 100000;
+int time_to_eat = 100000;
+int usleep_timing = 300000;
+int time_to_die = 10000;
+
 // struct
 typedef struct timeval timing;
-
 typedef struct s_philo
 {
-    timing last_time_did_eat;
-    pthread_mutex_t _fork;
-    pthread_t thread;
     int index;
+    pthread_t thread;
+    timing last_time_did_eat;
+    pthread_mutex_t fork_mutex;
+    pthread_mutex_t last_time_did_eat_mutex;
+    pthread_mutex_t *printing_mutex;
     struct s_philo *next;
 } t_philo;
-
-typedef struct s_shared_data
-{
-    time_t time_to_die;
-    time_t time_to_eat;
-    time_t time_to_sleep;
-    timing current_time;
-    int someone_died;
-    pthread_mutex_t printing_lock;
-    t_philo *philo;
-} t_shared_data;
 
 t_philo *new_philo(int index)
 {
     t_philo *res = malloc(sizeof(t_philo));
     res->index = index;
     res->next = NULL;
-    pthread_mutex_init(&res->_fork, NULL);
+    pthread_mutex_init(&res->fork_mutex, NULL);
+    // pthread_mutex_init(&res->last_time_did_eat_mutex, NULL);
     printf("new philo %d\n", res->index);
     return (res);
 }
@@ -56,83 +52,98 @@ void *routine(void *arg)
 {
     while (1)
     {
-        t_shared_data *table = (t_shared_data *)arg;
-        t_philo *philo = table->philo;
-        usleep(100000);
-        if (pthread_mutex_lock(&philo->_fork) == 0 && pthread_mutex_lock(&philo->next->_fork) == 0)
+        t_philo *var = (t_philo *)arg;
+        usleep(usleep_timing);
+        if (pthread_mutex_lock(&var->fork_mutex) == 0 && pthread_mutex_lock(&var->next->fork_mutex) == 0)
         {
-            gettimeofday(&philo->last_time_did_eat, NULL);
-            philo->last_time_did_eat.tv_sec += table->time_to_eat;
-            pthread_mutex_lock(&table->printing_lock);
-            printf("var[%d] is eating using %d and %d\n", philo->index, philo->index, philo->next->index);
-            pthread_mutex_unlock(&table->printing_lock);
-            usleep(table->time_to_eat);
+            gettimeofday(&var->last_time_did_eat, NULL);
+            var->last_time_did_eat.tv_sec += (time_t)time_to_eat;
+            // var->last_time_did_eat
+            usleep(2 * usleep_timing);
+            pthread_mutex_lock(var->printing_mutex);
+            printf("philosopher %d has taken fork %d and %d\n", var->index, var->index, var->next->index);
+            // pthread_mutex_unlock(var->printing_mutex);
+
+            usleep(usleep_timing);
+            // pthread_mutex_lock(var->printing_mutex);
+            printf("philosopher %d is eating\n", var->index);
+            // pthread_mutex_unlock(var->printing_mutex);
+            usleep(time_to_eat);
         }
-        pthread_mutex_unlock(&philo->_fork);
-        pthread_mutex_unlock(&philo->next->_fork);
-        pthread_mutex_lock(&table->printing_lock);
-        printf("var[%d] is sleeping\n", philo->index);
-        pthread_mutex_unlock(&table->printing_lock);
-        usleep(table->time_to_sleep);
+        pthread_mutex_unlock(&var->fork_mutex);
+        pthread_mutex_unlock(&var->next->fork_mutex);
+        // lock printing
+        usleep(usleep_timing);
+        // pthread_mutex_lock(var->printing_mutex);
+        printf("philosopher %d is sleeping\n", var->index);
+        pthread_mutex_unlock(var->printing_mutex);
+        usleep(time_to_sleep);
     }
     return (NULL);
 }
 
 // add a usleep here
-void check(t_shared_data *table)
+void check(t_philo *var)
 {
-    // t_philo *curr = table->philo;
-    timing current_time;
+    // t_philo *curr = var;
+    // timing current_time;
     while (1)
     {
-
-        gettimeofday(&current_time, NULL);
-        // add lock here
-        if (current_time.tv_sec - table->philo->last_time_did_eat.tv_sec >= table->time_to_die)
-        {
-            printf("%d did died\n", table->philo->index);
-            exit(0);
-        }
-        table->philo = table->philo->next;
+        // gettimeofday(&current_time, NULL);
+        // // add lock here
+        // if (current_time.tv_sec - var->last_time_did_eat.tv_sec >= (time_t)time_to_die)
+        // {
+        //     printf("%d did died\n", var->index);
+        //     exit(0);
+        // }
+        // curr = curr->next;
     }
 }
 
 int main(void)
 {
-    int len = 5;
-    t_shared_data *table;
-    int i;
+    int len = 6;
+    t_philo *philo = init_philos(len);
+    pthread_mutex_t *printing_mutex = malloc(sizeof(pthread_mutex_t));
+    pthread_mutex_init(printing_mutex, NULL);
 
-    // init table
-    table = malloc(sizeof(t_shared_data));
-    table->time_to_sleep = 300000;
-    table->time_to_eat = 300000;
-    table->time_to_die = 10000;
-    pthread_mutex_init(&table->printing_lock, NULL);
-
-    // init philos
-    table->philo = init_philos(len);
-
-    // check philos
-    i = 0;
-    t_philo *philo = table->philo;
+    printf("\n");
+    int i = 0;
     while (i < len)
     {
-        printf("-> %d\n", philo->index);
+        philo->printing_mutex = printing_mutex;
+        // printf("-> %d\n", philo->index);
         philo = philo->next;
         i++;
     }
+    printf("\n");
+    // inti timing
+    timing current_time;
+    gettimeofday(&current_time, NULL);
 
-    // init timing
-    gettimeofday(&table->current_time, NULL);
-    // create threads
     i = 0;
     while (i < len)
     {
-        table->philo->last_time_did_eat.tv_sec = table->current_time.tv_sec; // verify if I should add micro seconds
-        pthread_create(&table->philo->thread, NULL, routine, table);
-        table->philo = table->philo->next;
+        // if (i % 2 == 0)
+        // {
+        philo->last_time_did_eat = current_time;
+        pthread_create(&philo->thread, NULL, routine, philo);
+        // }
+        philo = philo->next;
         i++;
     }
-    check(table);
+    // usleep(2*usleep_timing);
+    // i = 0;
+    // while (i < len)
+    // {
+    //     if (i % 2 == 1)
+    //     {
+    //         philo->last_time_did_eat = current_time;
+    //         pthread_create(&philo->thread, NULL, routine, philo);
+    //     }
+    //     philo = philo->next;
+    //     i++;
+    // }
+    check(philo);
+    // i = 0;
 }

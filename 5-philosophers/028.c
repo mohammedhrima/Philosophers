@@ -4,10 +4,11 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-int time_to_sleep = 100000;
+int time_to_sleep = 300000;
 int time_to_eat = 100000;
-int usleep_timing = 300000;
 int time_to_die = 10000;
+int time_to_think = 100000;
+int usleep_timing = 50000;
 
 // struct
 typedef struct timeval timing;
@@ -25,7 +26,7 @@ typedef struct s_philo
 t_philo *new_philo(int index)
 {
     t_philo *res = malloc(sizeof(t_philo));
-    res->index = index;
+    res->index = index + 1;
     res->next = NULL;
     pthread_mutex_init(&res->fork_mutex, NULL);
     // pthread_mutex_init(&res->last_time_did_eat_mutex, NULL);
@@ -48,36 +49,34 @@ t_philo *init_philos(int len)
     return (head);
 }
 
+void print_state(t_philo *philo, char *str)
+{
+    usleep(usleep_timing);
+    pthread_mutex_lock(philo->printing_mutex);
+    printf("philosopher %d %s\n", philo->index, str);
+    pthread_mutex_unlock(philo->printing_mutex);
+}
+
 void *routine(void *arg)
 {
     while (1)
     {
         t_philo *var = (t_philo *)arg;
-        usleep(usleep_timing);
         if (pthread_mutex_lock(&var->fork_mutex) == 0 && pthread_mutex_lock(&var->next->fork_mutex) == 0)
         {
             gettimeofday(&var->last_time_did_eat, NULL);
             var->last_time_did_eat.tv_sec += (time_t)time_to_eat;
-            // var->last_time_did_eat
             usleep(2 * usleep_timing);
-            pthread_mutex_lock(var->printing_mutex);
-            printf("philosopher %d has taken fork %d and %d\n", var->index, var->index, var->next->index);
-            // pthread_mutex_unlock(var->printing_mutex);
-
-            usleep(usleep_timing);
-            // pthread_mutex_lock(var->printing_mutex);
-            printf("philosopher %d is eating\n", var->index);
-            // pthread_mutex_unlock(var->printing_mutex);
+            print_state(var, "has taken fork");
+            print_state(var, "is eating");
             usleep(time_to_eat);
         }
         pthread_mutex_unlock(&var->fork_mutex);
         pthread_mutex_unlock(&var->next->fork_mutex);
-        // lock printing
-        usleep(usleep_timing);
-        // pthread_mutex_lock(var->printing_mutex);
-        printf("philosopher %d is sleeping\n", var->index);
-        pthread_mutex_unlock(var->printing_mutex);
+        print_state(var, "is sleeping");
         usleep(time_to_sleep);
+        print_state(var, "is thinking");
+        usleep(usleep_timing);
     }
     return (NULL);
 }
@@ -124,26 +123,26 @@ int main(void)
     i = 0;
     while (i < len)
     {
-        // if (i % 2 == 0)
-        // {
-        philo->last_time_did_eat = current_time;
-        pthread_create(&philo->thread, NULL, routine, philo);
-        // }
+        if (i % 2 == 0)
+        {
+            philo->last_time_did_eat = current_time;
+            pthread_create(&philo->thread, NULL, routine, philo);
+        }
         philo = philo->next;
         i++;
     }
-    // usleep(2*usleep_timing);
-    // i = 0;
-    // while (i < len)
-    // {
-    //     if (i % 2 == 1)
-    //     {
-    //         philo->last_time_did_eat = current_time;
-    //         pthread_create(&philo->thread, NULL, routine, philo);
-    //     }
-    //     philo = philo->next;
-    //     i++;
-    // }
+    usleep(usleep_timing);
+    i = 0;
+    while (i < len)
+    {
+        if (i % 2 == 1)
+        {
+            philo->last_time_did_eat = current_time;
+            pthread_create(&philo->thread, NULL, routine, philo);
+        }
+        philo = philo->next;
+        i++;
+    }
     check(philo);
     // i = 0;
 }
