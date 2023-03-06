@@ -154,7 +154,7 @@ void print_state(t_philo *philo, char *str, time_t current_time_in_miliseconds, 
         else
             printf("%10lu: %s\n", current_time_in_miliseconds, str);
     }
-    printf("philos meals now %d\n" , philo->number_of_meals_eaten);
+    // printf("philos meals now %d\n" , philo->number_of_meals_eaten);
     pthread_mutex_unlock(&philo->data->printing_mutex);
 }
 
@@ -188,9 +188,9 @@ void *routine(void *arg)
         // mutex for number of meals
         print_state(philo, "is eating", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, 0);
         my_sleep(philo->data->time_to_eat);
-        pthread_mutex_lock(&philo->number_of_meals_eaten_mutex);
-        philo->number_of_meals_eaten++;
-        pthread_mutex_unlock(&philo->number_of_meals_eaten_mutex);
+        // pthread_mutex_lock(&philo->number_of_meals_eaten_mutex);
+        // philo->number_of_meals_eaten++;
+        // pthread_mutex_unlock(&philo->number_of_meals_eaten_mutex);
 
         // unlock forks after eating
         pthread_mutex_unlock(&philo->next->fork_mutex);
@@ -238,11 +238,11 @@ void check(t_philo *philo)
             i++;
         }
         gettimeofday(&current_time, NULL);
-        if (all_philos_finished_number_fo_meals)
-        {
-            print_state(NULL, "all philos finished there meals", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, 0);
-            exit(0);
-        }
+        // if (all_philos_finished_number_fo_meals)
+        // {
+        //     print_state(NULL, "all philos finished there meals", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, 0);
+        //     exit(0);
+        // }
     }
 }
 
