@@ -44,3 +44,14 @@ never make a copy of thread condition variable
 - types of behaviour of threads:
     joinable (default): main thread wait for it
     detached : main thread won't wait for it 
+
+
+- to see adress of all your data: objdump -t
+
+- to run programs one after another:
+    ./program1 && ./program2
+
+- to run programs in same time:
+    ./program1 & ./program2
+
+-  WL,-no_pie (no position indipendent executable)
