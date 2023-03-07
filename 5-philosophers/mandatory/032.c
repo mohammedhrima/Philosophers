@@ -290,7 +290,7 @@ int main(void)
   4 310 200 100 / one should die
   2
   */
-    int number_of_philos = 2;
+    int number_of_philos = 1;
     time_t time_to_die = 800;
     time_t time_to_eat = 200;
     time_t time_to_sleep = 200;

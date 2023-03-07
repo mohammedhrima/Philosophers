@@ -92,7 +92,6 @@ t_philo *new_philo(int index, t_shared *data)
     pthread_mutex_init(&philo->last_time_did_eat_mutex, NULL);
     pthread_mutex_init(&philo->number_of_meals_eaten_mutex, NULL);
 
-
     philo->number_of_meals_eaten = 0;
     philo->next = NULL;
 
@@ -144,6 +143,7 @@ t_philo *init_philos(int number_of_philos, t_shared *data)
 
 void print_state(t_philo *philo, char *str, time_t current_time_in_miliseconds, int fork_index)
 {
+    // usleep(50);
     pthread_mutex_lock(&philo->data->printing_mutex);
     if (fork_index)
         printf("%10lu: %d %s %d\n", current_time_in_miliseconds, philo->index, str, fork_index);
@@ -174,36 +174,38 @@ void *routine(void *arg)
         pthread_mutex_lock(&philo->fork_mutex);
         gettimeofday(&current_time, NULL);
         print_state(philo, "has taken a fork", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, philo->index);
+        if (philo->data->number_of_philos > 1)
+        {
+            // take second fork
+            pthread_mutex_lock(&philo->next->fork_mutex);
+            gettimeofday(&current_time, NULL);
+            print_state(philo, "has taken a fork", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, philo->next->index);
 
-        // take second fork
-        pthread_mutex_lock(&philo->next->fork_mutex);
-        gettimeofday(&current_time, NULL);
-        print_state(philo, "has taken a fork", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, philo->next->index);
+            // start eating
+            pthread_mutex_lock(&philo->last_time_did_eat_mutex);
+            gettimeofday(&current_time, NULL);
+            philo->last_time_did_eat = current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time + philo->data->time_to_eat;
+            pthread_mutex_unlock(&philo->last_time_did_eat_mutex);
+            // mutex for number of meals
+            print_state(philo, "is eating", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, 0);
+            my_sleep(philo->data->time_to_eat);
+            // pthread_mutex_lock(&philo->number_of_meals_eaten_mutex);
+            // philo->number_of_meals_eaten++;
+            // pthread_mutex_unlock(&philo->number_of_meals_eaten_mutex);
 
-        // start eating
-        pthread_mutex_lock(&philo->last_time_did_eat_mutex);
-        gettimeofday(&current_time, NULL);
-        philo->last_time_did_eat = current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time + philo->data->time_to_eat;
-        pthread_mutex_unlock(&philo->last_time_did_eat_mutex);
-        // mutex for number of meals
-        print_state(philo, "is eating", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, 0);
-        my_sleep(philo->data->time_to_eat);
-        // pthread_mutex_lock(&philo->number_of_meals_eaten_mutex);
-        // philo->number_of_meals_eaten++;
-        // pthread_mutex_unlock(&philo->number_of_meals_eaten_mutex);
+            // unlock forks after eating
+            pthread_mutex_unlock(&philo->next->fork_mutex);
+            pthread_mutex_unlock(&philo->fork_mutex);
 
-        // unlock forks after eating
-        pthread_mutex_unlock(&philo->next->fork_mutex);
-        pthread_mutex_unlock(&philo->fork_mutex);
+            // start sleeping
+            gettimeofday(&current_time, NULL);
+            print_state(philo, "is sleeping", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, 0);
+            my_sleep(philo->data->time_to_sleep);
 
-        // start sleeping
-        gettimeofday(&current_time, NULL);
-        print_state(philo, "is sleeping", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, 0);
-        my_sleep(philo->data->time_to_sleep);
-
-        // start thinking
-        gettimeofday(&current_time, NULL);
-        print_state(philo, "is thinking", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, 0);
+            // start thinking
+            gettimeofday(&current_time, NULL);
+            print_state(philo, "is thinking", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, 0);
+        }
     }
     return (NULL);
 }
@@ -221,22 +223,24 @@ void check(t_philo *philo)
         all_philos_finished_number_fo_meals = 1;
         while (i < philo->data->number_of_philos)
         {
-            pthread_mutex_lock(&philo->last_time_did_eat_mutex);
+            // pthread_mutex_lock(&philo->last_time_did_eat_mutex);
             gettimeofday(&current_time, NULL);
             if (current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time - philo->last_time_did_eat >= time_to_die)
             {
+                // pthread_mutex_lock(&philo->data->printing_mutex);
                 // printf("last time did finish eating %lu, and current time %lu\n", philo->last_time_did_eat, current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time);
                 print_state(philo, "did died", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, 0);
                 exit(0);
             }
-            pthread_mutex_unlock(&philo->last_time_did_eat_mutex);
-            pthread_mutex_lock(&philo->number_of_meals_eaten_mutex);
-            if (philo->number_of_meals_eaten < philo->data->number_of_meals)
-                all_philos_finished_number_fo_meals = 0;
-            pthread_mutex_unlock(&philo->number_of_meals_eaten_mutex);
+            // pthread_mutex_unlock(&philo->last_time_did_eat_mutex);
+            // pthread_mutex_lock(&philo->number_of_meals_eaten_mutex);
+            // if (philo->number_of_meals_eaten < philo->data->number_of_meals)
+            //     all_philos_finished_number_fo_meals = 0;
+            // pthread_mutex_unlock(&philo->number_of_meals_eaten_mutex);
             philo = philo->next;
             i++;
         }
+        // pthread_mutex_unlock(&philo->data->printing_mutex);
         gettimeofday(&current_time, NULL);
         // if (all_philos_finished_number_fo_meals)
         // {
@@ -262,11 +266,21 @@ int main(void)
     4 410 200 200 / no one die
     4 310 200 100 / one should die
     2
+
+    lbehja :
+    int number_of_philos = 150;
+    time_t time_to_die = 60;
+    time_t time_to_eat = 60;
+    time_t time_to_sleep = 60;
+    int number_of_meals = 5;
+
+
     */
-    int number_of_philos = 3;
-    time_t time_to_die = 401;
+    int number_of_philos = 2;
+    time_t time_to_die = 100;
     time_t time_to_eat = 200;
     time_t time_to_sleep = 200;
+    /////////////////////
     int number_of_meals = 5;
 
     // ft_putnbr(time_to_die);
