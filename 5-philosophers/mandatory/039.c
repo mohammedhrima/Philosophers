@@ -236,7 +236,7 @@ void check(t_philo *philo)
         pthread_mutex_lock(&philo->data->number_of_philos_who_did_eat_mutex);
         if (philo->data->number_of_meals && philo->data->number_of_philos_who_did_eat / philo->data->number_of_meals == philo->data->number_of_philos)
             return;
- 
+
         pthread_mutex_unlock(&philo->data->number_of_philos_who_did_eat_mutex);
 
         pthread_mutex_unlock(&philo->data->printing_mutex);
@@ -248,7 +248,6 @@ void check(t_philo *philo)
 
 // don't forget duk ltest dyul walu in atoi ...
 // check pthread functions and gettimeofday if they failed
-// rmove exit from your code
 int main(void)
 {
     int i;

@@ -55,3 +55,7 @@ never make a copy of thread condition variable
     ./program1 & ./program2
 
 -  WL,-no_pie (no position indipendent executable)
+
+- how to use valgrind:
+    gcc -g file.c -o file
+    valgrind --leak-check=full ./file

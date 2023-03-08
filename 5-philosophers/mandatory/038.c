@@ -26,6 +26,7 @@ typedef struct s_shared
     int number_of_philos_who_did_eat;
     t_mutex printing_mutex;
     t_mutex number_of_philos_who_did_eat_mutex;
+    t_mutex exit_mutex;
 
 } t_shared;
 
@@ -99,6 +100,11 @@ t_shared *new_shared(time_t time_to_eat, time_t time_to_die, time_t time_to_slee
         printf("Error\n");
         exit(-1);
     }
+    if (pthread_mutex_init(&data->exit_mutex, NULL) != 0)
+    {
+        printf("Error\n");
+        exit(-1);
+    }
     return (data);
 }
 
@@ -128,6 +134,15 @@ void take_fork(t_philo *philo, t_mutex *token_fork)
         printf("Error\n");
         exit(-1);
     }
+    ////////////////////////////////////////////
+    if (current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time - philo->last_time_did_eat >= philo->data->time_to_die)
+    {
+        printf("%10lu: %d did died\n", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, philo->index);
+        pthread_mutex_unlock(&philo->data->exit_mutex);
+        // return;
+        // exit(0);
+    }
+    ////////////////////////////////////////////
     pthread_mutex_lock(&philo->data->printing_mutex);
     printf("%10lu: %d has taken a fork\n", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, philo->index);
     pthread_mutex_unlock(&philo->data->printing_mutex);
@@ -142,14 +157,24 @@ void eating(t_philo *philo)
         printf("Error\n");
         exit(-1);
     }
+    ////////////////////////////////////
+    if (current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time - philo->last_time_did_eat >= philo->data->time_to_die)
+    {
+        printf("%10lu: %d did died\n", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, philo->index);
+        pthread_mutex_unlock(&philo->data->exit_mutex);
+        // return;
+        // exit(0);
+    }
+
     // check last time did eat
     pthread_mutex_lock(&philo->last_time_did_eat_mutex);
     philo->last_time_did_eat = current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time;
-
-    pthread_mutex_lock(&philo->data->number_of_philos_who_did_eat_mutex);
-    philo->data->number_of_philos_who_did_eat += 1;
-    pthread_mutex_unlock(&philo->data->number_of_philos_who_did_eat_mutex);
-
+    if (philo->data->number_of_meals)
+    {
+        pthread_mutex_lock(&philo->data->number_of_philos_who_did_eat_mutex);
+        philo->data->number_of_philos_who_did_eat += 1;
+        pthread_mutex_unlock(&philo->data->number_of_philos_who_did_eat_mutex);
+    }
     pthread_mutex_unlock(&philo->last_time_did_eat_mutex);
 
     // print state
@@ -175,6 +200,15 @@ void sleeping(t_philo *philo)
         printf("Error\n");
         exit(-1);
     }
+    ///////////////////////
+    if (current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time - philo->last_time_did_eat >= philo->data->time_to_die)
+    {
+        printf("%10lu: %d did died\n", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, philo->index);
+        pthread_mutex_unlock(&philo->data->exit_mutex);
+        // return;
+        // exit(0);
+    }
+
     // print state
     pthread_mutex_lock(&philo->data->printing_mutex);
     printf("%10lu: %d is sleeping\n", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, philo->index);
@@ -232,11 +266,15 @@ void check(t_philo *philo)
         {
             printf("%10lu: %d did died\n", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, philo->index);
             return;
+            // exit(0);
         }
         pthread_mutex_lock(&philo->data->number_of_philos_who_did_eat_mutex);
-        if (philo->data->number_of_meals && philo->data->number_of_philos_who_did_eat / philo->data->number_of_meals == philo->data->number_of_philos)
-            return;
- 
+        if (philo->data->number_of_philos_who_did_eat / philo->data->number_of_meals == philo->data->number_of_philos)
+        {
+
+            // return;
+            // exit(0);
+        }
         pthread_mutex_unlock(&philo->data->number_of_philos_who_did_eat_mutex);
 
         pthread_mutex_unlock(&philo->data->printing_mutex);
@@ -248,7 +286,6 @@ void check(t_philo *philo)
 
 // don't forget duk ltest dyul walu in atoi ...
 // check pthread functions and gettimeofday if they failed
-// rmove exit from your code
 int main(void)
 {
     int i;
@@ -275,6 +312,7 @@ int main(void)
     data->starting_time = current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND;
 
     i = 0;
+    pthread_mutex_lock(&data->exit_mutex);
     // look the game mutex
     while (i < number_of_philos)
     {
@@ -309,5 +347,6 @@ int main(void)
     // if a philosopher die he unlock the game  mutex so the main can exit
     // add check here
     // try to lock the game mutex
-    check(philo);
+    // check(philo);
+    pthread_mutex_lock(&data->exit_mutex);
 }
