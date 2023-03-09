@@ -177,7 +177,7 @@ void routine(t_philo *philo, sem_t *printing_semaphore, sem_t *fork_semaphore)
         if (philo->data->number_of_meals == -1 || philo->number_of_meal_eaten < philo->data->number_of_meals)
         {
             // printf("philo %d, number of meals eaten %d, total number of meals %d\n", philo->index, philo->number_of_meal_eaten, philo->data->number_of_meals);
-            my_sleep(5);
+            // my_sleep(5);
             sem_wait(fork_semaphore);
             // printf("184\n");
             if (gettimeofday(&current_time, NULL) != 0)
@@ -254,7 +254,7 @@ int main()
     int i = 0;
 
     t_timing current_time;
-    int number_of_philos = 2;
+    int number_of_philos = 6;
     time_t time_to_die = 400;
     time_t time_to_eat = 200;
     time_t time_to_sleep = 200;

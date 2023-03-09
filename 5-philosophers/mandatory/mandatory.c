@@ -260,7 +260,7 @@ int main(void)
     int i;
     t_timing current_time;
 
-    int number_of_philos = 100;
+    int number_of_philos = 10;
     time_t time_to_die = 410;
     time_t time_to_eat = 200;
     time_t time_to_sleep = 200;
