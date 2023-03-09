@@ -5,6 +5,7 @@
 #include <semaphore.h>
 
 sem_t *my_semaphore;
+typedef pthread_mutex_t t_mutex;
 
 int counter = 0;
 

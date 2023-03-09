@@ -58,8 +58,7 @@ void my_sleep(time_t sleeping_timing)
         if (gettimeofday(&end, NULL) != 0)
         {
             printf("Error\n");
-            break;
-            // exit(-1);
+            exit(-1);
         }
         if (end.tv_sec * THOUSAND + end.tv_usec / THOUSAND >= start.tv_sec * THOUSAND + start.tv_usec / THOUSAND + sleeping_timing)
             break;
@@ -237,7 +236,7 @@ void check(t_philo *philo)
         pthread_mutex_lock(&philo->data->number_of_philos_who_did_eat_mutex);
         if (philo->data->number_of_meals && philo->data->number_of_philos_who_did_eat / philo->data->number_of_meals == philo->data->number_of_philos)
             return;
- 
+
         pthread_mutex_unlock(&philo->data->number_of_philos_who_did_eat_mutex);
 
         pthread_mutex_unlock(&philo->data->printing_mutex);
@@ -249,7 +248,6 @@ void check(t_philo *philo)
 
 // don't forget duk ltest dyul walu in atoi ...
 // check pthread functions and gettimeofday if they failed
-// ermove exit from your code
 int main(void)
 {
     int i;
@@ -260,7 +258,6 @@ int main(void)
     time_t time_to_eat = 200;
     time_t time_to_sleep = 200;
     // handle if there is no number of meals
-    // if not giving set it with -1
     int number_of_meals = 100;
 
     // init shared data

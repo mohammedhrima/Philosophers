@@ -7,6 +7,7 @@
 typedef pthread_mutex_t t_mutex;
 
 int counter = 0;
+time_t time_to_eat = 300000;
 
 typedef struct s_shared
 {
@@ -35,23 +36,35 @@ typedef struct s_philo
     sem_t *fork_semaphore;
     sem_t *printing_semaphore;
 
+    t_shared *data;
     struct s_philo *next;
 } t_philo;
+
 void routine(t_philo *philo)
 {
-    while (1)
+    // printf("%d started the routine\n", philo->index);
+    while (philo->number_of_meal_eaten < 5)
     {
-        usleep(80000);
-        sem_wait(philo->fork_semaphore);
-        sem_wait(philo->printing_semaphore);
-        printf("%d is eating \n", philo->index);
-
-        sem_post(philo->printing_semaphore);
-        sem_post(philo->fork_semaphore);
+        usleep(30000);
+        // printf("%d is waiting for fork\n", philo->index);
+        // usleep()
+        // sem_wait(philo->fork_semaphore);
+        // sem_wait(philo->printing_semaphore);
+        printf("%d is eating meal %d \n", philo->index, philo->number_of_meal_eaten);
+        usleep(time_to_eat);
+        philo->number_of_meal_eaten++;
+        // if (philo->number_of_meal_eaten == 40)
+        // {
+        //     printf("philo %d did finish eating 4 meals\n", philo->index);
+        //     exit(0);
+        // }
+        // sem_post(philo->printing_semaphore);
+        // sem_post(philo->fork_semaphore);
+        // usleep(10);
     }
 }
 
-#define len 4
+#define len 6
 
 int main()
 {
@@ -59,10 +72,11 @@ int main()
     int i = 0;
     int number_of_philos = len;
 
-    sem_t *semaphore = sem_open("/fork", O_CREAT, 0644, number_of_philos / 2 - number_of_philos % 2);
-    sem_t *printing_semaphore = sem_open("/printing", O_CREAT, 0644, 1);
+    // sem_t *fork_semaphore = sem_open("/fork", O_CREAT, 0644, 3);
+    sem_t *fork_semaphore = sem_open("/fork", O_CREAT, 0644, number_of_philos);
+    sem_t *printing_semaphore = sem_open("/printing", O_CREAT, 0644, number_of_philos / 2);
 
-    if (semaphore == SEM_FAILED)
+    if (fork_semaphore == SEM_FAILED)
     {
         perror("sem_open");
         exit(EXIT_FAILURE);
@@ -70,32 +84,36 @@ int main()
 
     while (i < len)
     {
-        philos[i].index = i + 1;
-        philos[i].number_of_meal_eaten = 0;
+
         philos[i].process_id = fork();
-        philos[i].fork_semaphore = semaphore;
-        philos[i].printing_semaphore = printing_semaphore;
         if (philos[i].process_id == 0)
         {
+            philos[i].index = i + 1;
+            philos[i].number_of_meal_eaten = 0;
+            philos[i].fork_semaphore = fork_semaphore;
+            philos[i].printing_semaphore = printing_semaphore;
             /// child process
             // printf("process %d is created \n", philos[i].index);
+            // usleep(5);
             routine(philos + i);
             exit(0);
             // while(1);
         }
-        else
-        {
-            i++;
-            // parent process
-        }
-    }
-
-    i = 0;
-    while (i < len)
-    {
+        // else
+        //     waitpid()
+        // else
+        // {
         i++;
-        wait(NULL);
+        // parent process
+        // }
     }
+    wait(NULL);
+    // i = 0;
+    // while (i < len)
+    // {
+    //     i++;
+    //     wait(NULL);
+    // }
 
 #if 0
     pid_t pid1, pid2;
@@ -133,7 +151,8 @@ int main()
     waitpid(pid2, NULL, 0);
 #endif
     // Close and unlink the semaphore
-    sem_close(semaphore);
+    sem_close(fork_semaphore);
+    sem_close(printing_semaphore);
     sem_unlink("/fork");
     sem_unlink("/printing");
 

@@ -1,0 +1,28 @@
+bonus: each philo will be a process
+   structs:
+         philo:
+            process_id
+            index
+            pointer_to_next_philo
+         shared:
+            time_to_eat
+            time_to_die
+            time_to_sleep
+            number_of_philos
+            number_of_meals
+            pointer to fork_semaphore
+            pointer to printing_smaphore
+
+
+- todo:
+   - each created process will do the routine like in the mandatory
+   - sem_wait(fork_semaphore) -> eat -> sem_post
+   - the rest will remain the same
+   - set number of semaphores to nember of philos / 2 (whithout reminder)
+
+
+- bonus and mandatory share smae files
+
+- my_minilibix:
+   - use atomic varibale in your minilibix
+   - line with angle
