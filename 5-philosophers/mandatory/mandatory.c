@@ -229,16 +229,21 @@ void check(t_philo *philo)
         }
         pthread_mutex_lock(&philo->last_time_did_eat_mutex);
         pthread_mutex_lock(&philo->data->printing_mutex);
-        if (current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time - philo->last_time_did_eat >= philo->data->time_to_die)
+        int i = 0;
+        while (i < philo->data->number_of_philos)
         {
-            printf("%10lu: %d did died\n", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, philo->index);
-            return;
+            if (current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time - philo->last_time_did_eat >= philo->data->time_to_die)
+            {
+                printf("%10lu: %d did died\n", current_time.tv_sec * THOUSAND + current_time.tv_usec / THOUSAND - philo->data->starting_time, philo->index);
+                return;
+            }
+            pthread_mutex_lock(&philo->data->number_of_philos_who_did_eat_mutex);
+            if (philo->data->number_of_meals && philo->data->number_of_philos_who_did_eat / philo->data->number_of_meals == philo->data->number_of_philos)
+                return;
+
+            pthread_mutex_unlock(&philo->data->number_of_philos_who_did_eat_mutex);
+            i++;
         }
-        pthread_mutex_lock(&philo->data->number_of_philos_who_did_eat_mutex);
-        if (philo->data->number_of_meals && philo->data->number_of_philos_who_did_eat / philo->data->number_of_meals == philo->data->number_of_philos)
-            return;
- 
-        pthread_mutex_unlock(&philo->data->number_of_philos_who_did_eat_mutex);
 
         pthread_mutex_unlock(&philo->data->printing_mutex);
         pthread_mutex_unlock(&philo->last_time_did_eat_mutex);
@@ -255,8 +260,8 @@ int main(void)
     int i;
     t_timing current_time;
 
-    int number_of_philos = 4;
-    time_t time_to_die = 400;
+    int number_of_philos = 100;
+    time_t time_to_die = 410;
     time_t time_to_eat = 200;
     time_t time_to_sleep = 200;
     // handle if there is no number of meals
@@ -292,7 +297,7 @@ int main(void)
         philo = philo->next;
         i++;
     }
-    my_sleep(10);
+    my_sleep(5);
     i = 0;
     while (i < number_of_philos)
     {
