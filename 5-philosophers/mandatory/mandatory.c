@@ -238,7 +238,7 @@ void check(t_philo *philo)
                 return;
             }
             pthread_mutex_lock(&philo->data->number_of_philos_who_did_eat_mutex);
-            if (philo->data->number_of_meals && philo->data->number_of_philos_who_did_eat / philo->data->number_of_meals == philo->data->number_of_philos)
+            if (philo->data->number_of_meals > -1 && philo->data->number_of_philos_who_did_eat / philo->data->number_of_meals == philo->data->number_of_philos)
                 return;
 
             pthread_mutex_unlock(&philo->data->number_of_philos_who_did_eat_mutex);
@@ -260,10 +260,10 @@ int main(void)
     int i;
     t_timing current_time;
 
-    int number_of_philos = 10;
-    time_t time_to_die = 410;
+    int number_of_philos = 4;
+    time_t time_to_die = 310;
     time_t time_to_eat = 200;
-    time_t time_to_sleep = 200;
+    time_t time_to_sleep = 100;
     // handle if there is no number of meals
     // if not giving set it with -1
     int number_of_meals = 100;
